@@ -15,34 +15,48 @@
 end
 
 function BIOS:Init()
+    self.debug = true 
     Component:Dialog(_,"BIOS","Initilizing BIOS")
-    if BIOS:CheckComponent("Components/KeyBoard") then 
+    BIOS:POST()
+end
+
+function BIOS:POST()
+    self.POSTDone = false
+     if BIOS:BootComponent("KeyBoard") then 
+        if BIOS.debug == true then 
+            Component:Dialog(_,"BIOS","COMPONENT KEYBOARD IS LOADED")
+        end
         local KeyBoard = require("Components/KeyBoard")
-
-         if not KeyBoard.Init then 
-            Component:Dialog("Error","BIOS","COMPONENT: KEYBOARD IS CORRUPTED ")
-         else
-            KeyBoard:Init()
-         end
-
+        KeyBoard:Init()
     else
-        Component:Dialog("Error","BIOS","COMPONENT: KEYBOARD NOT FOUND ")
-    end
-
-    if BIOS:CheckComponent("Components/Audio") then 
-    local Audio = require("Components/Audio")
-
-     if not Audio.Init then
-        Component:Dialog("Error","BIOS","COMPONENT: AUDIO IS CORRUPTED ")
-     else
-        Audio:Init()
+        Component:Dialog("Error","BIOS","COMPONENT: KEYBOARD IS CORRUPTED ")
      end
-
+     if BIOS:BootComponent("Audio") then 
+        if BIOS.debug == true then 
+            Component:Dialog(_,"BIOS","COMPONENT AUDIO IS LOADED")
+        end
+        local Audio = require("Components/Audio")
+        Audio:Init()
     else
-        Component:Dialog("Error","BIOS","COMPONENT: AUDIO NOT FOUND ")
+        Component:Dialog("Error","BIOS","COMPONENT: AUDIO IS CORRUPTED ")
+     end
+     if BIOS.debug == true then
+        Component:Dialog(_,"BIOS","POST FINISHED")
     end
-
+     self.POSTDone = true 
 end
 
 
- return BIOS 
+function BIOS:BootComponent(ComponentName)
+    if BIOS:CheckComponent("Components/"..ComponentName) then 
+        local ComponentName = require("Components/"..ComponentName)
+        if not ComponentName.Init then 
+            Component:Dialog("Error","BIOS","COMPONENT:"..ComponentName.."IS CORRUPTED ")
+        end
+        return true 
+    else
+        return false 
+    end
+end
+
+ return BIOS
