@@ -12,7 +12,6 @@ function love.update(dt)
      end
 end
 
-function love.draw()
-end
+
 
 

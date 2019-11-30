@@ -3,14 +3,26 @@ local CPU = Component:Create("CPU")
 local BIOS = require("BIOS")
 local Audio = require("Components/Audio")
 local KeyBoard = require("Components/KeyBoard")
+local EMU = require("EMU")
+local GPU = require("GPU")
 
 function CPU:Load()
  Component:Dialog(_,"CPU","CPU Loaded")
- self.PC = 0
- self.Bits = 0
- self.Clock = os.clock()
- self.TickSpeed = 1
+ self.TickSpeed = 1 * 60   -- (Measured in Seconds)
+ self.Clock =  self.TickSpeed/60
+ self.FPS = love.timer.getFPS( ) -- FPS
+ self.dt = 0 
+ EMU:Load()
+ GPU:Load()
+end
 
+function CPU:Timer(n)
+ local Time = os.clock()
+  while true do 
+   if os.clock() > Time + n then
+    break
+  end
+ end
 end
 
 function CPU:Init()
@@ -21,11 +33,18 @@ function CPU:Init()
 end
 
 function CPU:update(dt)
-if os.clock() > CPU.Clock + CPU.TickSpeed then 
-    print("test")
-    CPU.Clock = os.clock()
+ CPU.FPS = love.timer.getFPS( )
+ EMU:update(dt)
+ CPU.dt = dt
+ if EMU.ROMLoaded == true then
+  CPU.Clock = CPU.Clock - dt 
+  if CPU.Clock <= 0 then
+   CPU.Clock = CPU.TickSpeed/60
+  end
+ end
 end
-end
+
+
 
 return CPU
 
